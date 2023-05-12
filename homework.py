@@ -4,11 +4,10 @@ import telegram
 import logging
 import time
 import requests
+import sys
 
 from http import HTTPStatus
-
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -57,8 +56,12 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.debug('Отправка сообщения в telegram')
-    except Exception:
-        logging.exception('Ошибка при отправке сообщения в telegram')
+    except telegram.error.TelegramError as error:
+        raise telegram.error.TelegramError(
+            f'Ошибка при отправке сообщения в telegram: {error}'
+        )
+    else:
+        logging.info('Сообщение отправлено в telegram')
 
 
 def get_api_answer(current_timestamp):
@@ -90,14 +93,15 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверка ответа API на соответствие документации."""
-    try:
-        homework = response['homeworks']
-    except KeyError as error:
-        logging.error(f'Ошибка доступа по ключу: {error}')
-    if not isinstance(homework, list):
-        logging.error('Не соответствующий тип данных')
-        raise TypeError('Не соответствующий тип данных')
-    return homework
+    logging.info('Проверка ответа от API')
+    if not isinstance(response, dict):
+        raise TypeError('Ответ API не является словарем')
+    if 'homeworks' not in response or 'current_date' not in response:
+        raise KeyError('Ошибка доступа по ключу: {error}')
+    homeworks = response['homeworks']
+    if not isinstance(homeworks, list):
+        raise TypeError('Ответ API не является листом')
+    return homeworks
 
 
 def parse_status(homework):
@@ -121,7 +125,7 @@ def main():
     """Основная логика работы бота."""
     if not check_tokens():
         logging.critical('Отсутствуют обязательные переменные')
-        return Exception('Отсутствуют обязательные переменные')
+        sys.exit('Отсутствуют обязательные переменные')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     status = ''
@@ -144,7 +148,17 @@ def main():
             if message_t != error_message:
                 send_message(bot, message_t)
                 error_message = message_t
-        time.sleep(RETRY_PERIOD)
+        except KeyError as error:
+            message = f'Ошибка доступа по ключу: {error}'
+            logging.error(message)
+        except TypeError as error:
+            message = f'Неверный тип данных: {error}'
+            logging.error(message)
+        except telegram.error.TelegramError as error:
+            message = f'Ошибка при отправке сообщения в telegram: {error}'
+            logging.error(message)
+        finally:
+            time.sleep(RETRY_PERIOD)
 
 
 if __name__ == '__main__':
