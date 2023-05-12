@@ -35,7 +35,7 @@ logging.basicConfig(
 
 
 def check_tokens():
-    '''Проверка обязательных переменных окружения.'''
+    """Проверка обязательных переменных окружения."""
     if PRACTICUM_TOKEN and TELEGRAM_TOKEN and TELEGRAM_CHAT_ID:
         return True
     else:
@@ -53,7 +53,7 @@ def check_tokens():
 
 
 def send_message(bot, message):
-    '''Отправляем пользователю сообщение'''
+    """Отправляем пользователю сообщение"""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.debug('Отправка сообщения в telegram')
@@ -62,7 +62,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
-    '''Отправка запроса к эндпоинту API-сервиса'''
+    """Отправка запроса к эндпоинту API-сервиса"""
     timestamp = current_timestamp or int(time.time())
     params = {"from_date": timestamp}
     try:
@@ -89,7 +89,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    '''Проверка ответа API на соответствие документации'''
+    """Проверка ответа API на соответствие документации"""
     try:
         homework = response['homeworks']
     except KeyError as error:
@@ -101,7 +101,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    '''Информация о статусе домашней работы'''
+    """Информация о статусе домашней работы"""
     if 'homework_name' not in homework:
         raise KeyError('Ключ "homework_name" не найден')
     if 'status' not in homework:
@@ -118,8 +118,7 @@ def parse_status(homework):
 
 
 def main():
-    '''Основная логика работы бота.'''
-
+    """Основная логика работы бота."""
     if not check_tokens():
         logging.critical('Отсутствуют обязательные переменные')
         return Exception('Отсутствуют обязательные переменные')
