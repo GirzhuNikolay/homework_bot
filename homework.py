@@ -154,9 +154,6 @@ def main():
         except TypeError as error:
             message = f'Неверный тип данных: {error}'
             logging.error(message)
-        except telegram.error.TelegramError as error:
-            message = f'Ошибка при отправке сообщения в telegram: {error}'
-            logging.error(message)
         finally:
             time.sleep(RETRY_PERIOD)
 
