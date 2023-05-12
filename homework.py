@@ -35,7 +35,7 @@ logging.basicConfig(
 
 
 def check_tokens():
-    """Проверка обязательных переменных окружения."""
+    '''Проверка обязательных переменных окружения.'''
     if PRACTICUM_TOKEN and TELEGRAM_TOKEN and TELEGRAM_CHAT_ID:
         return True
     else:
@@ -118,7 +118,7 @@ def parse_status(homework):
 
 
 def main():
-    """Основная логика работы бота."""
+    '''Основная логика работы бота.'''
 
     if not check_tokens():
         logging.critical('Отсутствуют обязательные переменные')
